@@ -2,5 +2,8 @@
 
 void Apple::Interact(Snake &snake, bool &isRunning) 
 {
-	snake.AddBodySegment(1);
+	if (snake.GetCurrentPowerUp() == 2)
+		snake.AddBodySegment(2);
+	else
+		snake.AddBodySegment(1);
 }

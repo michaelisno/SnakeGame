@@ -8,6 +8,9 @@ private:
 	std::vector<std::pair<int, int>> m_snakeBody;
 	int m_directionX, m_directionY;
 
+	int m_currentPowerUp = 0;
+	int m_powerUpTimer = 10;
+
 public:
 	Snake(int startX, int startY);
 
@@ -19,5 +22,11 @@ public:
 
 	const std::vector<std::pair<int, int>>& GetBody() const { return m_snakeBody; }
 	std::pair<int, int> GetHead() const { return m_snakeBody[0]; }
+
+	int GetCurrentPowerUp() const { return m_currentPowerUp; }
+	void SetPowerUp(int powerUp) { m_currentPowerUp = powerUp; }
+
+	void SetPowerUpTimer(int timeSeconds) { m_powerUpTimer = timeSeconds; }
+	int GetPowerUpTimer() const { return m_powerUpTimer; }
 
 };

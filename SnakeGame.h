@@ -2,6 +2,8 @@
 #include "Snake.h"
 #include "Apple.h"
 #include "DangerZone.h"
+#include "PowerUp.h"
+#include "GameSettings.h"
 #include <ctime>
 #include <vector>
 #include <utility>
@@ -11,27 +13,48 @@ class SnakeGame
 {
 private:
 	int width, height;
-	bool isRunning;
+
+    int gameUpdateRate;
 
 	Snake snake;
 	Apple apple;
-	DangerZone dangerZone;
+	std::vector<DangerZone> dangerZones;
+    std::vector<PowerUp> powerUps;
 
 public:
-	SnakeGame(int w, int h) : width(w), height(h), snake(w / 2, h / 2), apple(0, 0), dangerZone(0, 0), isRunning(true) 
-	{
-		srand(time(0));
+    bool isRunning;
 
-		std::vector<std::pair<int, int>> occupied = snake.GetBody();
+    SnakeGame(GameSettings settings) : width(settings.GameWidth), height(settings.GameHeight), isRunning(true), snake(settings.SnakeStartCoordX, settings.SnakeStartCoordY), apple(0, 0), gameUpdateRate(settings.GameUpdateRate)
+    {
+        srand(time(0));
 
-		apple.RandomisePosition(width, height, occupied);
-		dangerZone.RandomisePosition(width, height, occupied);
-	}
+        std::vector<std::pair<int, int>> occupied = snake.GetBody();
+
+        apple.RandomisePosition(width, height, occupied);
+
+        for (int i = 0; i < settings.NumberOfDangerZones; i++) 
+        {
+            DangerZone newDangerZone(0, 0);
+            newDangerZone.RandomisePosition(width, height, occupied);
+
+            dangerZones.push_back(newDangerZone);
+        }
+
+        for (int i = 0; i < settings.NumberOfPowerUps; i++)
+        {
+            PowerUp newPowerUp(0, 0);
+            newPowerUp.RandomisePosition(width, height, occupied);
+
+            powerUps.push_back(newPowerUp);
+        }
+    }
 
 	void Render() const;
 	void Input();
 	void Update();
 
-	bool Running() const { return isRunning; }
+    void GameEnded(int ending);
+
+    bool CheckHighScore(int score, int &prevHighScore);
 
 };

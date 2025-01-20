@@ -45,11 +45,14 @@ bool Snake::CheckCollision(int width, int height) const
 		return true;
 	}
 
-	for (int i = 1; i < m_snakeBody.size(); i++)
+	if (GetCurrentPowerUp() != 3)
 	{
-		if (m_snakeBody[i] == head)
+		for (int i = 1; i < m_snakeBody.size(); i++)
 		{
-			return true;
+			if (m_snakeBody[i] == head)
+			{
+				return true;
+			}
 		}
 	}
 
