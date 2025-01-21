@@ -19,9 +19,9 @@ void Snake::ChangeDirection(char input)
 	else if (input == 'g') { AddBodySegment(1); }
 }
 
-void Snake::Move(int amount)
+void Snake::Move()
 {
-	std::pair<int, int> newHead = { m_snakeBody[0].first + (amount * m_directionX), m_snakeBody[0].second + (amount * m_directionY) };
+	std::pair<int, int> newHead = { m_snakeBody[0].first + m_directionX, m_snakeBody[0].second + m_directionY };
 	
 	m_snakeBody.insert(m_snakeBody.begin(), newHead);
 	m_snakeBody.pop_back();
@@ -32,7 +32,6 @@ void Snake::AddBodySegment(int numberOfSegments)
 	for (int i = 0; i < numberOfSegments; i++)
 	{
 		m_snakeBody.push_back(m_snakeBody.back());
-
 	}
 }
 

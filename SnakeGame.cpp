@@ -10,9 +10,9 @@ void SnakeGame::Render() const
 {
 	system("cls");
 
-    for (int y = 0; y < height; y++) 
+    for (int y = 0; y < m_height; y++) 
     {
-        for (int x = 0; x < width; x++) 
+        for (int x = 0; x < m_width; x++) 
         {
             bool printed = false;
 
@@ -57,6 +57,7 @@ void SnakeGame::Render() const
                 cout << "\033[48;5;235m" << "  " << "\033[0m";
             }
         }
+
         cout << endl;
     }
 
@@ -67,41 +68,51 @@ void SnakeGame::Render() const
     else if (snake.GetCurrentPowerUp() == 2) cout << "Increased Growth Amount";
     else if (snake.GetCurrentPowerUp() == 3) cout << "Invincibility";
 
-    if (snake.GetCurrentPowerUp() != 0)
-        cout << " For: " << snake.GetPowerUpTimer() << " more second(s)." << endl;
+    if (snake.GetCurrentPowerUp() != 0) cout << " For: " << snake.GetPowerUpTimer() << " more second(s)." << endl;
+
 }
 
 void SnakeGame::Input()
 {
     if (_kbhit())
     {
-        char input = _getch();
-        snake.ChangeDirection(input);
+        snake.ChangeDirection(_getch());
     }
 }
 
 void SnakeGame::Update()
-{
-    if (snake.GetCurrentPowerUp() == 1)
-        snake.Move(2);
-    else
-        snake.Move(1);
+{  
+    snake.Move();
 
     static int elapsedTime = 0;
+    static int tempUpdateRate = 0;
 
-    // snake power up count-down timer
     if (snake.GetCurrentPowerUp() != 0)
     {
+        if (snake.GetCurrentPowerUp() == 1 && tempUpdateRate == 0)
+        {
+            tempUpdateRate = GetUpdateRate();
+            SetUpdateRate(tempUpdateRate / 1.5);
+        }
+
         if (snake.GetPowerUpTimer() == 0)
         {
-            // power-up finished
+            if (snake.GetCurrentPowerUp() == 1)
+            {
+                SetUpdateRate(tempUpdateRate);
+                tempUpdateRate = 0;
+            }
+
             elapsedTime = 0;
+
             snake.SetPowerUp(0);
             snake.SetPowerUpTimer(10);
         }
-        else {
-            elapsedTime += gameUpdateRate;
-            if (elapsedTime >= 1000)
+        else 
+        {
+            elapsedTime += GetUpdateRate();
+
+            while (elapsedTime >= 1000)
             {
                 snake.SetPowerUpTimer(snake.GetPowerUpTimer() - 1);
                 elapsedTime -= 1000;
@@ -109,19 +120,18 @@ void SnakeGame::Update()
         }
     }
 
-    if (snake.CheckCollision(width, height))
+    if (snake.CheckCollision(m_width, m_height))
     {
-        isRunning = false;
+        SetIsRunning(false);
         GameEnded(1);
     }
 
     if (snake.GetHead().first == apple.GetX() && snake.GetHead().second == apple.GetY()) 
     {
-        apple.Interact(snake, isRunning);
-
         vector<pair<int, int>> occupied = snake.GetBody();
 
-        apple.RandomisePosition(width, height, occupied);
+        apple.Interact(snake, m_isRunning);
+        apple.RandomisePosition(m_width, m_height, occupied);
     }
 
     if (snake.GetCurrentPowerUp() != 3)
@@ -130,26 +140,28 @@ void SnakeGame::Update()
         {
             if (snake.GetHead().first == dangerZone.GetX() && snake.GetHead().second == dangerZone.GetY())
             {
-                dangerZone.Interact(snake, isRunning);
+                dangerZone.Interact(snake, m_isRunning);
 
-                if (!isRunning)
+                if (!GetIsRunning())
+                {
                     GameEnded(2);
+                }
             }
         }
     }
 
     if (snake.GetCurrentPowerUp() == 0)
     {
-        for (auto it = powerUps.begin(); it != powerUps.end();)
+        for (auto powerUpIterator = powerUps.begin(); powerUpIterator != powerUps.end();)
         {
-            if (snake.GetHead().first == it->GetX() && snake.GetHead().second == it->GetY())
+            if (snake.GetHead().first == powerUpIterator->GetX() && snake.GetHead().second == powerUpIterator->GetY())
             {
-                it->Interact(snake, isRunning);
-                it = powerUps.erase(it);
+                powerUpIterator->Interact(snake, m_isRunning);
+                powerUpIterator = powerUps.erase(powerUpIterator);
             }
             else
             {
-                ++it;
+                ++powerUpIterator;
             }
         }
     }
@@ -159,12 +171,10 @@ void SnakeGame::GameEnded(int ending)
 {
     system("cls");
 
-    cout << "Snake Game" << endl << "----------" << endl << endl;
+    cout << "Snake Game Over" << endl << "---------------" << endl << endl;
 
-    if (ending == 1)
-        cout << "Game Over! You hit a wall or yourself!" << endl;
-    else if (ending == 2)
-        cout << "Game Over! You hit a danger zone!" << endl;
+    if (ending == 1) cout << "Game Over! You hit a wall or yourself!" << endl;
+    else if (ending == 2) cout << "Game Over! You hit a danger zone!" << endl;
 
     cout << "Your Snake was: " << snake.GetBody().size() << " segment(s) long." << endl;
 
@@ -177,14 +187,6 @@ void SnakeGame::GameEnded(int ending)
     }
 
     cout << endl;
-    cout << "Play Again? Press any key.";
-
-    while (!_kbhit())
-    {
-        this_thread::sleep_for(chrono::milliseconds(100));
-    }
-
-    system("start x64/Debug/SnakeGame.exe");
 }
 
 bool SnakeGame::CheckHighScore(int score, int &prevHighScore)

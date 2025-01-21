@@ -15,7 +15,7 @@ public:
 	Snake(int startX, int startY);
 
 	void ChangeDirection(char input);
-	void Move(int amount);
+	void Move();
 	void AddBodySegment(int numberOfSegments);
 
 	bool CheckCollision(int width, int height) const;

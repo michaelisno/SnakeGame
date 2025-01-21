@@ -1,8 +1,8 @@
 #pragma once
 #include <vector>
 #include <utility>
-#include "Snake.h"
 #include <string>
+#include "Snake.h"
 
 class Interactable
 {
